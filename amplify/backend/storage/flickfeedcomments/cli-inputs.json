@@ -1,0 +1,10 @@
+{
+  "resourceName": "flickfeedcomments",
+  "tableName": "flickfeedcomments",
+  "partitionKey": {
+    "fieldName": "commentId",
+    "fieldType": "string"
+  },
+  "gsi": [],
+  "triggerFunctions": []
+}

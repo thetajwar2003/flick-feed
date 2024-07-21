@@ -1,0 +1,10 @@
+{
+  "resourceName": "flickfeedusers",
+  "tableName": "flickfeedusers",
+  "partitionKey": {
+    "fieldName": "userId",
+    "fieldType": "string"
+  },
+  "gsi": [],
+  "triggerFunctions": []
+}
