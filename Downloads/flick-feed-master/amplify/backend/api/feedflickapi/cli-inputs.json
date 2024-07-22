@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "paths": {
+    "/posts": {
+      "name": "/posts",
+      "lambdaFunction": "feedflickpostsqueries",
+      "permissions": {
+        "setting": "open"
+      }
+    },
+    "/user": {
+      "name": "/user",
+      "lambdaFunction": "feedclickusersqueries",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}

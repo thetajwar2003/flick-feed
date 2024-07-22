@@ -1,0 +1,145 @@
+{
+  "api": {
+    "feedflickapi": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "feedflickpostsqueries"
+        },
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "feedclickusersqueries"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    }
+  },
+  "auth": {
+    "internetprogramming32e592e4": {
+      "customAuth": false,
+      "dependsOn": [],
+      "frontendAuthConfig": {
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyCharacters": [],
+          "passwordPolicyMinLength": 8
+        },
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "socialProviders": [],
+        "usernameAttributes": [],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito"
+    }
+  },
+  "function": {
+    "feedclickusersqueries": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributeEnvMap": {
+            "Arn": "TABLE_ARN",
+            "Name": "TABLE_NAME"
+          },
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "storage",
+          "resourceName": "flickfeedusers"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "feedflickpostsqueries": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributeEnvMap": {
+            "Arn": "TABLE_ARN",
+            "Name": "TABLE_NAME"
+          },
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "storage",
+          "resourceName": "flickfeedposts"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_feedclickusersqueries_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "feedclickusersqueries"
+        }
+      ]
+    },
+    "AMPLIFY_function_feedclickusersqueries_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "feedclickusersqueries"
+        }
+      ]
+    },
+    "AMPLIFY_function_feedflickpostsqueries_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "feedflickpostsqueries"
+        }
+      ]
+    },
+    "AMPLIFY_function_feedflickpostsqueries_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "feedflickpostsqueries"
+        }
+      ]
+    }
+  },
+  "storage": {
+    "feedflickscontent": {
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "S3"
+    },
+    "flickfeedcomments": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB"
+    },
+    "flickfeedposts": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB"
+    },
+    "flickfeedusers": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB"
+    }
+  }
+}

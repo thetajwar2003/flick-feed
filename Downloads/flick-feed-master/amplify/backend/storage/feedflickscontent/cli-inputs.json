@@ -1,0 +1,16 @@
+{
+  "resourceName": "feedflickscontent",
+  "policyUUID": "4102c3fa",
+  "bucketName": "feedflickscontent",
+  "storageAccess": "authAndGuest",
+  "guestAccess": [
+    "READ"
+  ],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}
