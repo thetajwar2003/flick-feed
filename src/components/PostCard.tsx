@@ -56,9 +56,8 @@ export default function PostCard({
           <p className="text-gray-600">{timeAgo(new Date(uploadDate))}</p>
         </div>
       </div>
-      <div className="relative w-full" style={{ paddingBottom: "100%" }}></div>
-
-      <Image
+      <div className="relative w-full" style={{ paddingBottom: "100%" }}>
+        <Image
           className="absolute top-0 left-0 w-full h-full object-cover"
           src={imageUrl}
           alt={caption}
@@ -95,5 +94,6 @@ export default function PostCard({
           View All Comments
         </Link>
       </div>
+    </div>
   );
 }
