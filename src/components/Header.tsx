@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { FaArrowRight } from "react-icons/fa6";
 
 export default function Header() {
-  const [user, setUser] = useState(false);
+  const [user, setUser] = useState(true);
   return (
     <header className="text-gray-100 body-font border-b-2 border-gray-300">
       <div className="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
