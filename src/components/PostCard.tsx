@@ -95,6 +95,5 @@ export default function PostCard({
           View All Comments
         </Link>
       </div>
-    </div>
   );
 }
