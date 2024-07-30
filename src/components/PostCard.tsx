@@ -1,14 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { FaHeart, FaComment } from "react-icons/fa";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+} from "firebase/firestore";
+import { firestore } from "../../lib/firebaseConfig";
 import { timeAgo } from "../../utils/convertTime";
+import useAuth from "@/hooks/useAuth";
 import Link from "next/link";
 
 interface Comment {
   username: string;
   text: string;
+  timestamp: string;
 }
 
 interface PostCardProps {
@@ -35,15 +45,46 @@ export default function PostCard({
   commentsCount,
   mostRecentComment,
 }: PostCardProps) {
+  const { user } = useAuth();
   const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(likes);
 
-  const handleLike = () => {
+  useEffect(() => {
+    const checkIfLiked = async () => {
+      if (user) {
+        const postRef = doc(firestore, "posts", postId);
+        const postSnap = await getDoc(postRef);
+        if (postSnap.exists() && postSnap.data().likedBy?.includes(user.uid)) {
+          setLiked(true);
+        }
+      }
+    };
+    checkIfLiked();
+  }, [user, postId]);
+
+  const handleLike = async () => {
+    if (!user) return;
+    const postRef = doc(firestore, "posts", postId);
+    if (liked) {
+      await updateDoc(postRef, {
+        likedBy: arrayRemove(user.uid),
+      });
+      setLikeCount(likeCount - 1);
+    } else {
+      await updateDoc(postRef, {
+        likedBy: arrayUnion(user.uid),
+      });
+      setLikeCount(likeCount + 1);
+    }
     setLiked(!liked);
   };
 
   return (
     <div className="w-full bg-white shadow-lg rounded-lg overflow-hidden my-4">
-      <div className="flex items-center px-4 py-2">
+      <Link
+        href={`profile/${username}`}
+        className="flex items-center px-4 py-2"
+      >
         <Image
           className="h-12 w-12 rounded-full object-cover"
           src={profilePicUrl}
@@ -55,7 +96,7 @@ export default function PostCard({
           <h2 className="text-xl font-semibold text-gray-800">{username}</h2>
           <p className="text-gray-600">{timeAgo(new Date(uploadDate))}</p>
         </div>
-      </div>
+      </Link>
       <div className="relative w-full" style={{ paddingBottom: "100%" }}>
         <Image
           className="absolute top-0 left-0 w-full h-full object-cover"
@@ -74,10 +115,10 @@ export default function PostCard({
               }`}
               onClick={handleLike}
             />
-            <span className="text-gray-600 ml-1">{likes}</span>
+            <span className="text-gray-600 ml-1">{likeCount}</span>
           </div>
 
-          <Link href="/post/1" className="flex items-center ml-2">
+          <Link href={`/post/${postId}`} className="flex items-center ml-2">
             <FaComment className="text-gray-300 hover:text-blue-400" />
             <span className="text-gray-600 ml-1">{commentsCount}</span>
           </Link>
@@ -90,7 +131,10 @@ export default function PostCard({
             <p className="text-gray-600">{mostRecentComment.text}</p>
           </div>
         )}
-        <Link href="/post/1" className=" text-gray-800 hover:text-blue-500 ">
+        <Link
+          href={`/post/${postId}`}
+          className=" text-gray-800 hover:text-blue-500 "
+        >
           View All Comments
         </Link>
       </div>
