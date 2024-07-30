@@ -6,14 +6,33 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { auth } from "../../../lib/firebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
 
+type ValidationErrors = {
+  email?: string;
+  password?: string;
+};
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
+    {}
+  );
   const router = useRouter();
 
+  const validateForm = () => {
+    const errors: ValidationErrors = {};
+    if (!email) errors.email = "Email is required";
+    if (!/\S+@\S+\.\S+/.test(email)) errors.email = "Email is invalid";
+    if (!password) errors.password = "Password is required";
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleLogin = async () => {
+    if (!validateForm()) return;
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push("/"); // Redirect to home page or dashboard
@@ -39,6 +58,9 @@ export default function Login() {
           onChange={(e) => setEmail(e.target.value)}
           className="w-full bg-gray-600 bg-opacity-20 focus:bg-transparent focus:ring-2 focus:ring-indigo-900 rounded border border-gray-600 focus:border-indigo-500 text-base outline-none text-gray-100 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
         />
+        {validationErrors.email && (
+          <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>
+        )}
       </div>
       <div className="relative mb-4">
         <label htmlFor="password" className="leading-7 text-sm text-gray-400">
@@ -59,6 +81,11 @@ export default function Login() {
         >
           {showPassword ? <FaEyeSlash /> : <FaEye />}
         </button>
+        {validationErrors.password && (
+          <p className="text-red-500 text-xs mt-1">
+            {validationErrors.password}
+          </p>
+        )}
       </div>
       <button
         onClick={handleLogin}

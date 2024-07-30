@@ -22,10 +22,28 @@ export default function SignUp() {
   const [profilePicPreview, setProfilePicPreview] = useState<string>(
     "https://picsum.photos/200"
   );
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const router = useRouter();
 
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+    if (!firstName) newErrors.firstName = "First Name is required";
+    if (!lastName) newErrors.lastName = "Last Name is required";
+    if (!username) newErrors.username = "Username is required";
+    if (!email) newErrors.email = "Email is required";
+    if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = "Email is invalid";
+    if (!password) newErrors.password = "Password is required";
+    if (password.length < 6)
+      newErrors.password = "Password must be at least 6 characters";
+    if (!birthdate) newErrors.birthdate = "Birthdate is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSignUp = async () => {
+    if (!validateForm()) return;
+
     try {
       let profilePicUrl = profilePicPreview;
 
@@ -125,6 +143,9 @@ export default function SignUp() {
           onChange={(e) => setFirstName(e.target.value)}
           className="w-full bg-gray-600 bg-opacity-20 focus:bg-transparent focus:ring-2 focus:ring-indigo-900 rounded border border-gray-600 focus:border-indigo-500 text-base outline-none text-gray-100 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
         />
+        {errors.firstName && (
+          <p className="text-red-500 text-xs">{errors.firstName}</p>
+        )}
       </div>
       <div className="relative mb-4">
         <label htmlFor="last-name" className="leading-7 text-sm text-gray-400">
@@ -138,6 +159,9 @@ export default function SignUp() {
           onChange={(e) => setLastName(e.target.value)}
           className="w-full bg-gray-600 bg-opacity-20 focus:bg-transparent focus:ring-2 focus:ring-indigo-900 rounded border border-gray-600 focus:border-indigo-500 text-base outline-none text-gray-100 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
         />
+        {errors.lastName && (
+          <p className="text-red-500 text-xs">{errors.lastName}</p>
+        )}
       </div>
       <div className="relative mb-4">
         <label htmlFor="username" className="leading-7 text-sm text-gray-400">
@@ -151,6 +175,9 @@ export default function SignUp() {
           onChange={(e) => setUsername(e.target.value)}
           className="w-full bg-gray-600 bg-opacity-20 focus:bg-transparent focus:ring-2 focus:ring-indigo-900 rounded border border-gray-600 focus:border-indigo-500 text-base outline-none text-gray-100 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
         />
+        {errors.username && (
+          <p className="text-red-500 text-xs">{errors.username}</p>
+        )}
       </div>
       <div className="relative mb-4">
         <label htmlFor="email" className="leading-7 text-sm text-gray-400">
@@ -164,6 +191,7 @@ export default function SignUp() {
           onChange={(e) => setEmail(e.target.value)}
           className="w-full bg-gray-600 bg-opacity-20 focus:bg-transparent focus:ring-2 focus:ring-indigo-900 rounded border border-gray-600 focus:border-indigo-500 text-base outline-none text-gray-100 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
         />
+        {errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
       </div>
       <div className="relative mb-4">
         <label htmlFor="password" className="leading-7 text-sm text-gray-400">
@@ -184,6 +212,9 @@ export default function SignUp() {
         >
           {showPassword ? <FaEyeSlash /> : <FaEye />}
         </button>
+        {errors.password && (
+          <p className="text-red-500 text-xs">{errors.password}</p>
+        )}
       </div>
       <div className="relative mb-4">
         <label htmlFor="bio" className="leading-7 text-sm text-gray-400">
@@ -209,6 +240,9 @@ export default function SignUp() {
           onChange={(e) => setBirthdate(e.target.value)}
           className="w-full bg-gray-600 bg-opacity-20 focus:bg-transparent focus:ring-2 focus:ring-indigo-900 rounded border border-gray-600 focus:border-indigo-500 text-base outline-none text-gray-100 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
         />
+        {errors.birthdate && (
+          <p className="text-red-500 text-xs">{errors.birthdate}</p>
+        )}
       </div>
       <button
         onClick={handleSignUp}
