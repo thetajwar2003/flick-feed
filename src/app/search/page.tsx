@@ -123,7 +123,7 @@ export default function Search() {
           filteredUsers.map((user) => (
             <div
               key={user.id}
-              className="flex items-center justify-between bg-gray-700 bg-opacity-75 rounded-lg p-4 mb-4 w-full"
+              className="flex flex-col sm:flex-row items-center justify-between bg-gray-700 bg-opacity-75 rounded-lg p-4 mb-4 w-full"
             >
               <Link
                 href={`/profile/${user.username}`}
@@ -140,7 +140,7 @@ export default function Search() {
               </Link>
               <button
                 onClick={() => handleFollow(user.id)}
-                className={`text-white border-0 py-2 px-4 focus:outline-none rounded text-lg ${
+                className={`mt-2 sm:mt-0 text-white border-0 py-2 px-4 focus:outline-none rounded text-lg ${
                   following.includes(user.id)
                     ? "bg-gray-500 hover:bg-gray-600"
                     : "bg-indigo-500 hover:bg-indigo-600"

@@ -1,8 +1,8 @@
 import { ProfileType } from "@/types/Profile";
 import Image from "next/image";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FaEdit } from "react-icons/fa";
-import { firestore, storage } from "../../lib/firebaseConfig"; // Adjust the import path as needed
+import { firestore } from "../../lib/firebaseConfig"; // Adjust the import path as needed
 import {
   doc,
   setDoc,
@@ -10,7 +10,6 @@ import {
   arrayUnion,
   arrayRemove,
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import useAuth from "@/hooks/useAuth"; // Adjust the import path as needed
 
 export default function ProfileData(profile: ProfileType) {
@@ -20,7 +19,6 @@ export default function ProfileData(profile: ProfileType) {
   const [isFollowing, setIsFollowing] = useState(
     profile.followersList.includes(user?.uid || "")
   );
-  const [newProfilePic, setNewProfilePic] = useState<File | null>(null);
   const [profilePicPreview, setProfilePicPreview] = useState<string | null>(
     null
   );
@@ -33,38 +31,24 @@ export default function ProfileData(profile: ProfileType) {
   };
 
   const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setNewProfilePic(file);
+    const file = e.target.files?.[0];
+    if (file) {
       setProfilePicPreview(URL.createObjectURL(file));
+      // Here, you would upload the image to Firebase Storage and update the profile picture URL in Firestore
     }
   };
 
   const handleSave = async () => {
     if (user) {
       try {
-        let profilePicUrl = editProfile.profilePicUrl;
-
-        // If a new profile picture is selected, upload it to Firebase Storage
-        if (newProfilePic) {
-          const storageRef = ref(
-            storage,
-            `profilePics/${user.uid}/${newProfilePic.name}`
-          );
-          await uploadBytes(storageRef, newProfilePic);
-          profilePicUrl = await getDownloadURL(storageRef);
-        }
-
-        // Update the profile data with the new profile picture URL
-        const updatedProfile = { ...editProfile, profilePicUrl };
-        setEditProfile(updatedProfile);
+        // Create a reference to the user's document
+        const docRef = doc(firestore, "users", user.uid); // Use the user ID
 
         // Save the updated profile data to Firestore
-        const docRef = doc(firestore, "users", user.uid);
-        await setDoc(docRef, updatedProfile);
+        await setDoc(docRef, editProfile);
 
         setEditMode(false);
-        console.log("Profile updated:", updatedProfile);
+        console.log("Profile updated:", editProfile);
       } catch (error) {
         console.error("Error updating profile:", error);
       }
@@ -119,7 +103,7 @@ export default function ProfileData(profile: ProfileType) {
 
   return (
     <>
-      <div className="bg-opacity-50 rounded-lg flex flex-col w-full">
+      <div className="bg-opacity-50 rounded-lg flex flex-col w-full p-4 sm:p-8">
         {!profile.otherUser && (
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-white text-lg font-medium title-font">
@@ -133,7 +117,7 @@ export default function ProfileData(profile: ProfileType) {
             </button>
           </div>
         )}
-        <div className="flex items-center mb-4 w-full">
+        <div className="flex flex-col sm:flex-row items-center mb-4 w-full">
           <Image
             className="rounded-full object-cover"
             src={profilePicPreview || editProfile.profilePicUrl}
@@ -151,11 +135,11 @@ export default function ProfileData(profile: ProfileType) {
               />
             </label>
           )}
-          <div className="ml-4">
+          <div className="ml-4 mt-4 sm:mt-0">
             <h2 className="text-white text-2xl font-semibold">
               {editProfile.username}
             </h2>
-            <div className="text-gray-400 flex space-x-2">
+            <div className="text-gray-400 flex flex-col sm:flex-row sm:space-x-2">
               <span>{editProfile.numOfPosts} Posts</span>
               <span>•</span>
               <span>{editProfile.followers} Followers</span>
@@ -170,7 +154,7 @@ export default function ProfileData(profile: ProfileType) {
             name="bio"
             value={editProfile.bio}
             onChange={handleInputChange}
-            className={`w-full bg-gray-600 bg-opacity-20 focus:bg-transparent focus:ring-2 focus:ring-indigo-900 rounded border border-gray-600 focus:border-indigo-500 text-base outline-none text-gray-100 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out`}
+            className="w-full bg-gray-600 bg-opacity-20 focus:bg-transparent focus:ring-2 focus:ring-indigo-900 rounded border border-gray-600 focus:border-indigo-500 text-base outline-none text-gray-100 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
             disabled={!editMode}
           />
         ) : (
@@ -180,7 +164,7 @@ export default function ProfileData(profile: ProfileType) {
       {editMode && (
         <button
           onClick={handleSave}
-          className="text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg"
+          className="text-white bg-indigo-500 border-0 py-2 px-8 focus:outline-none hover:bg-indigo-600 rounded text-lg mt-4 sm:mt-0"
         >
           Save
         </button>
