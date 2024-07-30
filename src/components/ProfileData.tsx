@@ -1,8 +1,8 @@
 import { ProfileType } from "@/types/Profile";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaEdit } from "react-icons/fa";
-import { firestore } from "../../lib/firebaseConfig"; // Adjust the import path as needed
+import { firestore, storage } from "../../lib/firebaseConfig"; // Adjust the import path as needed
 import {
   doc,
   setDoc,
@@ -10,6 +10,7 @@ import {
   arrayUnion,
   arrayRemove,
 } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import useAuth from "@/hooks/useAuth"; // Adjust the import path as needed
 
 export default function ProfileData(profile: ProfileType) {
@@ -19,6 +20,10 @@ export default function ProfileData(profile: ProfileType) {
   const [isFollowing, setIsFollowing] = useState(
     profile.followersList.includes(user?.uid || "")
   );
+  const [newProfilePic, setNewProfilePic] = useState<File | null>(null);
+  const [profilePicPreview, setProfilePicPreview] = useState<string | null>(
+    null
+  );
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -27,17 +32,39 @@ export default function ProfileData(profile: ProfileType) {
     setEditProfile({ ...editProfile, [name]: value });
   };
 
+  const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setNewProfilePic(file);
+      setProfilePicPreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleSave = async () => {
     if (user) {
       try {
-        // Create a reference to the user's document
-        const docRef = doc(firestore, "users", user.uid); // Use the user ID
+        let profilePicUrl = editProfile.profilePicUrl;
+
+        // If a new profile picture is selected, upload it to Firebase Storage
+        if (newProfilePic) {
+          const storageRef = ref(
+            storage,
+            `profilePics/${user.uid}/${newProfilePic.name}`
+          );
+          await uploadBytes(storageRef, newProfilePic);
+          profilePicUrl = await getDownloadURL(storageRef);
+        }
+
+        // Update the profile data with the new profile picture URL
+        const updatedProfile = { ...editProfile, profilePicUrl };
+        setEditProfile(updatedProfile);
 
         // Save the updated profile data to Firestore
-        await setDoc(docRef, editProfile);
+        const docRef = doc(firestore, "users", user.uid);
+        await setDoc(docRef, updatedProfile);
 
         setEditMode(false);
-        console.log("Profile updated:", editProfile);
+        console.log("Profile updated:", updatedProfile);
       } catch (error) {
         console.error("Error updating profile:", error);
       }
@@ -109,7 +136,7 @@ export default function ProfileData(profile: ProfileType) {
         <div className="flex items-center mb-4 w-full">
           <Image
             className="rounded-full object-cover"
-            src={editProfile.profilePicUrl}
+            src={profilePicPreview || editProfile.profilePicUrl}
             alt={editProfile.username}
             width={100}
             height={100}
@@ -117,7 +144,11 @@ export default function ProfileData(profile: ProfileType) {
           {editMode && !profile.otherUser && (
             <label className="ml-4 bg-gray-800 p-2 rounded-full cursor-pointer">
               <FaEdit className="text-white" />
-              <input type="file" className="hidden" />
+              <input
+                type="file"
+                className="hidden"
+                onChange={handleProfilePicChange}
+              />
             </label>
           )}
           <div className="ml-4">

@@ -14,6 +14,7 @@ import {
 } from "firebase/firestore";
 import { firestore } from "../../../lib/firebaseConfig";
 import useAuth from "@/hooks/useAuth"; // Adjust the import path as needed
+import Link from "next/link";
 
 interface User {
   id: string;
@@ -124,7 +125,10 @@ export default function Search() {
               key={user.id}
               className="flex items-center justify-between bg-gray-700 bg-opacity-75 rounded-lg p-4 mb-4 w-full"
             >
-              <div className="flex items-center">
+              <Link
+                href={`/profile/${user.username}`}
+                className="flex items-center"
+              >
                 <Image
                   className="rounded-full object-cover"
                   src={user.profilePicUrl}
@@ -133,7 +137,7 @@ export default function Search() {
                   height={50}
                 />
                 <span className="ml-4 text-white text-lg">{user.username}</span>
-              </div>
+              </Link>
               <button
                 onClick={() => handleFollow(user.id)}
                 className={`text-white border-0 py-2 px-4 focus:outline-none rounded text-lg ${
