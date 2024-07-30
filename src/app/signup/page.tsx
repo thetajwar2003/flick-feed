@@ -1,7 +1,13 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import { FaEye, FaEyeSlash, FaEdit } from "react-icons/fa";
+import Image from "next/image";
+import { auth, firestore, storage } from "../../../lib/firebaseConfig";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { doc, setDoc } from "firebase/firestore";
 
 export default function SignUp() {
   const [firstName, setFirstName] = useState("");
@@ -12,23 +18,101 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [bio, setBio] = useState("");
   const [birthdate, setBirthdate] = useState("");
+  const [profilePic, setProfilePic] = useState<File | null>(null);
+  const [profilePicPreview, setProfilePicPreview] = useState<string>(
+    "https://picsum.photos/200"
+  );
 
-  const handleSignUp = () => {
-    // Handle sign-up logic here
-    console.log("First Name:", firstName);
-    console.log("Last Name:", lastName);
-    console.log("Username:", username);
-    console.log("Email:", email);
-    console.log("Password:", password);
-    console.log("Bio:", bio);
-    console.log("Birthdate:", birthdate);
+  const router = useRouter();
+
+  const handleSignUp = async () => {
+    try {
+      let profilePicUrl = profilePicPreview;
+
+      if (profilePic) {
+        const storageRef = ref(
+          storage,
+          `profilePics/${username}-${profilePic.name}`
+        );
+        await uploadBytes(storageRef, profilePic);
+        profilePicUrl = await getDownloadURL(storageRef);
+      }
+
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      console.log("Sign Up Complete:", user);
+      console.log("User ID:", user.uid);
+
+      // Save user data to Firestore
+      await setDoc(doc(firestore, "users", user.uid), {
+        userId: user.uid,
+        username,
+        firstName,
+        lastName,
+        email,
+        bio,
+        profilePicUrl,
+        birthdate,
+        createdAt: new Date().toISOString(),
+        posts: [],
+        followers: 0,
+        followersList: [],
+        following: 0,
+        followingList: [],
+      });
+
+      // Redirect or show a success message
+      router.push("/");
+    } catch (error) {
+      console.log("Error signing up:", error);
+    }
+  };
+
+  const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfilePic(file);
+      setProfilePicPreview(URL.createObjectURL(file));
+    }
   };
 
   return (
-    <div className="md:w-1/2 bg-opacity-50 rounded-lg p-8 flex flex-col w-full mx-4">
+    <div className="bg-opacity-50 rounded-lg p-8 flex flex-col w-full mx-4">
       <h2 className="text-white text-lg font-medium title-font mb-5">
         Sign Up
       </h2>
+      <div className="relative mb-4">
+        <label
+          htmlFor="profile-pic"
+          className="leading-7 text-sm text-gray-400"
+        >
+          Profile Picture
+        </label>
+        <div className="flex items-center">
+          <Image
+            className="rounded-full object-cover"
+            src={profilePicPreview}
+            alt="Profile Picture Preview"
+            width={100}
+            height={100}
+          />
+          <label className="ml-4 bg-gray-800 p-2 rounded-full cursor-pointer">
+            <FaEdit className="text-white" />
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              id="profile-pic"
+              onChange={handleProfilePicChange}
+            />
+          </label>
+        </div>
+      </div>
       <div className="relative mb-4">
         <label htmlFor="first-name" className="leading-7 text-sm text-gray-400">
           First Name
