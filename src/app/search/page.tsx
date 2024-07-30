@@ -10,6 +10,7 @@ import {
   updateDoc,
   arrayUnion,
   arrayRemove,
+  getDoc,
 } from "firebase/firestore";
 import { firestore } from "../../../lib/firebaseConfig";
 import useAuth from "@/hooks/useAuth"; // Adjust the import path as needed
